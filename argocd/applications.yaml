@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: consumer-api-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/akc276/customer-api-gateway.git'
+    targetRevision: main
+    path: helm/consumer-api-gateway
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: processor-service
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/akc276/processor-service.git'
+    targetRevision: main
+    path: helm/processor-service
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

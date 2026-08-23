@@ -72,6 +72,20 @@ The Gateway includes a periodic scheduled polling service ([ScheduledPublisherSe
 
 ---
 
+## 🐙 ArgoCD GitOps Deployment
+
+Declarative ArgoCD Application manifests are located in the [argocd/](argocd/) directory:
+
+- **[argocd/applications.yaml](argocd/applications.yaml)**: Defines ArgoCD `Application` resources for automated Helm deployment & self-healing.
+- **[argocd/README.md](argocd/README.md)**: Complete step-by-step guide for ArgoCD installation, UI port-forwarding, and secret retrieval.
+
+```bash
+# Deploy ArgoCD GitOps applications to Kubernetes
+kubectl apply -f argocd/applications.yaml
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Clone Repository (with Submodules)
