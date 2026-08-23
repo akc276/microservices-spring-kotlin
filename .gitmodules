@@ -1,0 +1,6 @@
+[submodule "consumer-api-gateway"]
+	path = consumer-api-gateway
+	url = https://github.com/akc276/customer-api-gateway.git
+[submodule "processor-service"]
+	path = processor-service
+	url = https://github.com/akc276/processor-service.git
