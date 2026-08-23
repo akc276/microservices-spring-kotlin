@@ -1,0 +1,90 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: gateway-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INIT_DATABASE: gateway
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: gateway-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  artifactory:
+    image: releases-docker.jfrog.io/jfrog/artifactory-oss:7.77.5
+    container_name: gateway-artifactory
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - artifactory_data:/var/opt/jfrog/artifactory
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: gateway-azurite
+    command: "azurite --blobHost 0.0.0.0 --tableHost 0.0.0.0 --queueHost 0.0.0.0"
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+
+  eventhubs-emulator:
+    image: mcr.microsoft.com/azure-messaging/eventhubs-emulator:latest
+    container_name: gateway-eventhubs
+    ports:
+      - "5672:5672"
+      - "9092:9092"
+      - "5300:5300"
+    environment:
+      BLOB_SERVER: azurite
+      METADATA_SERVER: azurite
+      ACCEPT_EULA: "Y"
+      CONFIG_PATH: "/workspace/schema/Config.json"
+    volumes:
+      - ./consumer-api-gateway/eventhubs-config.json:/Eventhubs_Emulator/ConfigFiles/Config.json
+    depends_on:
+      - azurite
+
+  gateway:
+    build:
+      context: ./consumer-api-gateway
+      dockerfile: Dockerfile
+    image: consumer-api-gateway:local
+    container_name: gateway-api
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/gateway
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      KAFKA_BOOTSTRAP_SERVERS: eventhubs-emulator:9092
+    depends_on:
+      - mongodb
+      - redis
+      - eventhubs-emulator
+
+  processor-service:
+    build:
+      context: ./processor-service
+      dockerfile: Dockerfile
+    image: processor-service:local
+    container_name: processor-service-api
+    ports:
+      - "8083:8081"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: eventhubs-emulator:9092
+    depends_on:
+      - eventhubs-emulator
+
+volumes:
+  mongodb_data:
+  redis_data:
+  artifactory_data:

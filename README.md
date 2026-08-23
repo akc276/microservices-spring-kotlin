@@ -82,7 +82,6 @@ cd microservices-spring-kotlin
 
 ### 2. Start Infrastructure & Microservices via Docker Compose
 ```bash
-cd consumer-api-gateway
 docker compose up -d --build
 ```
 
